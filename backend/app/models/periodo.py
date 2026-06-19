@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Numeric, Date
+from sqlalchemy import Column, Integer, Numeric, Date, String
 from app.database import Base
 
 class Periodo(Base):
@@ -9,3 +9,4 @@ class Periodo(Base):
     año = Column(Integer, nullable=False)
     fecha_corte = Column(Date, nullable=False)
     total_general = Column(Numeric(12,2), default=0)
+    descripcion = Column(String(200), nullable=True)

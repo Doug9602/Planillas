@@ -22,6 +22,7 @@ class PlanillaResponse(PlanillaCreate):
     monto_horas_nocturnas: float
     monto_vacaciones: float         
     monto_aguinaldo: float
+    aguinaldo_gravado: float
     monto_quincena25: float
     monto_isss: float
     monto_afp: float
@@ -31,6 +32,8 @@ class PlanillaResponse(PlanillaCreate):
     total_ingresos: float
     total_deducciones: float
     monto_neto: float
+    monto_planilla_unica: float 
+    monto_cotizable: float 
 
     class Config:
         from_attributes = True

@@ -8,6 +8,7 @@ from app.models.empleado import Empleado
 from app.schemas.planilla import PlanillaCreate, PlanillaResponse, PlanillaUpdate
 from app import calculos
 
+TOPE_AGUINALDO_EXENTO = 1500.0
 router = APIRouter(prefix="/planilla", tags=["Planilla"])
 
 def get_db():
@@ -47,13 +48,16 @@ def crear_planilla(planilla_in: PlanillaCreate, db: Session = Depends(get_db)):
     if periodo.mes == 12:
         monto_aguinaldo = calculos.calcular_aguinaldo(sueldo_base, empleado.fecha_ingreso, periodo.fecha_corte)
 
-    # Vacaciones (solo si es diciembre y tiene al menos 1 año de servicio)
+    # Aguinaldo gravado (solo la parte que excede el tope exento)
+    aguinaldo_gravado = max(0, monto_aguinaldo - TOPE_AGUINALDO_EXENTO)
+
+    # Vacaciones
     monto_vacaciones = calculos.calcular_monto_vacaciones(sueldo_base, empleado.fecha_ingreso, periodo.fecha_corte)
 
     # Quincena 25
     monto_quincena25 = calculos.calcular_quincena25(sueldo_base, planilla_in.quincena25_aplica)
 
-    # Total ingresos (sin bonificacion_vacaciones)
+    # Total ingresos
     total_ingresos = (sueldo_base +
                       monto_extra_diurnas +
                       monto_extra_nocturnas +
@@ -64,20 +68,30 @@ def crear_planilla(planilla_in: PlanillaCreate, db: Session = Depends(get_db)):
                       monto_vacaciones +
                       monto_quincena25)
 
-    # Monto cotizable (excluye quincena25)
-    monto_cotizable = total_ingresos - monto_quincena25
+    # MONTO COTIZABLE
+    monto_cotizable = (sueldo_base +
+                       monto_extra_diurnas +
+                       monto_extra_nocturnas +
+                       monto_nocturnas +
+                       monto_vacaciones +
+                       planilla_in.bono_extra +
+                       aguinaldo_gravado)
 
     # Deducciones
     isss_emp = calculos.calcular_isss(monto_cotizable)
     afp_emp = calculos.calcular_afp(monto_cotizable)
-    base_isr = total_ingresos - isss_emp - afp_emp
+    base_isr = monto_cotizable - isss_emp - afp_emp
     isr = calculos.calcular_isr(base_isr)
 
     total_deducciones = isss_emp + afp_emp + isr
     monto_neto = total_ingresos - total_deducciones
 
-    isss_patronal = monto_cotizable * calculos.ISSS_PATRONAL_PCT
+    # Patronales (con tope)
+    isss_patronal = calculos.calcular_isss_patronal(monto_cotizable)
     afp_patronal = monto_cotizable * calculos.AFP_PATRONAL_PCT
+
+    # Monto a depositar en planilla única
+    monto_planilla_unica = isss_emp + afp_emp + isss_patronal + afp_patronal
 
     # --- CREAR REGISTRO ---
     nueva = Planilla(
@@ -95,13 +109,15 @@ def crear_planilla(planilla_in: PlanillaCreate, db: Session = Depends(get_db)):
         monto_horas_extras_nocturnas=monto_extra_nocturnas,
         monto_horas_nocturnas=monto_nocturnas,
         monto_aguinaldo=monto_aguinaldo,
-        monto_vacaciones=0,  # no se guarda, se calcula al vuelo
+        monto_vacaciones=0,
         monto_quincena25=monto_quincena25,
         monto_isss=isss_emp,
         monto_afp=afp_emp,
         monto_isr=isr,
         monto_isss_patronal=isss_patronal,
         monto_afp_patronal=afp_patronal,
+        monto_planilla_unica=monto_planilla_unica,
+        monto_cotizable=monto_cotizable,
         total_ingresos=total_ingresos,
         total_deducciones=total_deducciones,
         monto_neto=monto_neto
@@ -127,6 +143,7 @@ def crear_planilla(planilla_in: PlanillaCreate, db: Session = Depends(get_db)):
         "monto_horas_extras_nocturnas": nueva.monto_horas_extras_nocturnas,
         "monto_horas_nocturnas": nueva.monto_horas_nocturnas,
         "monto_aguinaldo": nueva.monto_aguinaldo,
+        "aguinaldo_gravado": aguinaldo_gravado,
         "monto_vacaciones": monto_vacaciones,
         "monto_quincena25": nueva.monto_quincena25,
         "monto_isss": nueva.monto_isss,
@@ -134,6 +151,8 @@ def crear_planilla(planilla_in: PlanillaCreate, db: Session = Depends(get_db)):
         "monto_isr": nueva.monto_isr,
         "monto_isss_patronal": nueva.monto_isss_patronal,
         "monto_afp_patronal": nueva.monto_afp_patronal,
+        "monto_planilla_unica": nueva.monto_planilla_unica,
+        "monto_cotizable": nueva.monto_cotizable,
         "total_ingresos": nueva.total_ingresos,
         "total_deducciones": nueva.total_deducciones,
         "monto_neto": nueva.monto_neto
@@ -173,7 +192,7 @@ def actualizar_planilla(id: int, planilla_in: PlanillaUpdate, db: Session = Depe
     planilla.bono_extra = planilla_in.bono_extra
     planilla.quincena25_aplica = planilla_in.quincena25_aplica
 
-    # Recalcular
+    # --- RECALCULAR ---
     sueldo_base = planilla.sueldo_base
     valor_hora = calculos.calcular_valor_hora(sueldo_base)
     monto_extra_diurnas = calculos.calcular_horas_extras_diurnas(planilla.horas_extras_diurnas, valor_hora)
@@ -183,6 +202,8 @@ def actualizar_planilla(id: int, planilla_in: PlanillaUpdate, db: Session = Depe
     monto_aguinaldo = 0.0
     if periodo.mes == 12:
         monto_aguinaldo = calculos.calcular_aguinaldo(sueldo_base, empleado.fecha_ingreso, periodo.fecha_corte)
+
+    aguinaldo_gravado = max(0, monto_aguinaldo - TOPE_AGUINALDO_EXENTO)
 
     monto_vacaciones = calculos.calcular_monto_vacaciones(sueldo_base, empleado.fecha_ingreso, periodo.fecha_corte)
 
@@ -198,17 +219,26 @@ def actualizar_planilla(id: int, planilla_in: PlanillaUpdate, db: Session = Depe
                       monto_vacaciones +
                       monto_quincena25)
 
-    monto_cotizable = total_ingresos - monto_quincena25
+    monto_cotizable = (sueldo_base +
+                       monto_extra_diurnas +
+                       monto_extra_nocturnas +
+                       monto_nocturnas +
+                       monto_vacaciones +
+                       planilla.bono_extra +
+                       aguinaldo_gravado)
 
+    # Deducciones
     isss_emp = calculos.calcular_isss(monto_cotizable)
     afp_emp = calculos.calcular_afp(monto_cotizable)
-    base_isr = total_ingresos - isss_emp - afp_emp
+    base_isr = monto_cotizable - isss_emp - afp_emp
     isr = calculos.calcular_isr(base_isr)
     total_deducciones = isss_emp + afp_emp + isr
     monto_neto = total_ingresos - total_deducciones
 
-    isss_patronal = monto_cotizable * calculos.ISSS_PATRONAL_PCT
+    # Patronales (con tope)
+    isss_patronal = calculos.calcular_isss_patronal(monto_cotizable)
     afp_patronal = monto_cotizable * calculos.AFP_PATRONAL_PCT
+    monto_planilla_unica = isss_emp + afp_emp + isss_patronal + afp_patronal
 
     # Asignar al modelo
     planilla.valor_hora = valor_hora
@@ -223,6 +253,8 @@ def actualizar_planilla(id: int, planilla_in: PlanillaUpdate, db: Session = Depe
     planilla.monto_isr = isr
     planilla.monto_isss_patronal = isss_patronal
     planilla.monto_afp_patronal = afp_patronal
+    planilla.monto_planilla_unica = monto_planilla_unica
+    planilla.monto_cotizable = monto_cotizable
     planilla.total_ingresos = total_ingresos
     planilla.total_deducciones = total_deducciones
     planilla.monto_neto = monto_neto
@@ -246,6 +278,7 @@ def actualizar_planilla(id: int, planilla_in: PlanillaUpdate, db: Session = Depe
         "monto_horas_extras_nocturnas": planilla.monto_horas_extras_nocturnas,
         "monto_horas_nocturnas": planilla.monto_horas_nocturnas,
         "monto_aguinaldo": planilla.monto_aguinaldo,
+        "aguinaldo_gravado": aguinaldo_gravado,
         "monto_vacaciones": monto_vacaciones,
         "monto_quincena25": planilla.monto_quincena25,
         "monto_isss": planilla.monto_isss,
@@ -253,6 +286,8 @@ def actualizar_planilla(id: int, planilla_in: PlanillaUpdate, db: Session = Depe
         "monto_isr": planilla.monto_isr,
         "monto_isss_patronal": planilla.monto_isss_patronal,
         "monto_afp_patronal": planilla.monto_afp_patronal,
+        "monto_planilla_unica": planilla.monto_planilla_unica,
+        "monto_cotizable": planilla.monto_cotizable,
         "total_ingresos": planilla.total_ingresos,
         "total_deducciones": planilla.total_deducciones,
         "monto_neto": planilla.monto_neto
@@ -275,9 +310,36 @@ def listar_planillas(db: Session = Depends(get_db)):
     for pl in planillas:
         periodo = db.query(Periodo).filter(Periodo.id == pl.periodo_id).first()
         empleado = db.query(Empleado).filter(Empleado.id == pl.empleado_id).first()
+        
         monto_vacaciones = 0.0
         if periodo and empleado:
             monto_vacaciones = calculos.calcular_monto_vacaciones(pl.sueldo_base, empleado.fecha_ingreso, periodo.fecha_corte)
+        
+        # Calcular aguinaldo gravado
+        monto_aguinaldo = float(pl.monto_aguinaldo) if pl.monto_aguinaldo else 0.0
+        aguinaldo_gravado = max(0, monto_aguinaldo - TOPE_AGUINALDO_EXENTO)
+        
+        # MONTO COTIZABLE
+        monto_cotizable = (float(pl.sueldo_base) +
+                           float(pl.monto_horas_extras_diurnas) +
+                           float(pl.monto_horas_extras_nocturnas) +
+                           float(pl.monto_horas_nocturnas) +
+                           float(monto_vacaciones) +
+                           float(pl.bono_extra) +
+                           aguinaldo_gravado)
+
+        # Recalcular ISSS, AFP e ISR
+        isss_emp = calculos.calcular_isss(monto_cotizable)
+        afp_emp = calculos.calcular_afp(monto_cotizable)
+        base_isr = monto_cotizable - isss_emp - afp_emp
+        isr = calculos.calcular_isr(base_isr)
+        total_deducciones = isss_emp + afp_emp + isr
+        monto_neto = float(pl.total_ingresos) - total_deducciones
+
+        # Patronales (con tope)
+        isss_patronal = calculos.calcular_isss_patronal(monto_cotizable)
+        afp_patronal = monto_cotizable * calculos.AFP_PATRONAL_PCT
+        monto_planilla_unica = isss_emp + afp_emp + isss_patronal + afp_patronal
 
         response_data = {
             "id": pl.id,
@@ -295,16 +357,19 @@ def listar_planillas(db: Session = Depends(get_db)):
             "monto_horas_extras_nocturnas": pl.monto_horas_extras_nocturnas,
             "monto_horas_nocturnas": pl.monto_horas_nocturnas,
             "monto_aguinaldo": pl.monto_aguinaldo,
+            "aguinaldo_gravado": aguinaldo_gravado,
             "monto_vacaciones": monto_vacaciones,
             "monto_quincena25": pl.monto_quincena25,
-            "monto_isss": pl.monto_isss,
-            "monto_afp": pl.monto_afp,
-            "monto_isr": pl.monto_isr,
-            "monto_isss_patronal": pl.monto_isss_patronal,
-            "monto_afp_patronal": pl.monto_afp_patronal,
+            "monto_isss": isss_emp,
+            "monto_afp": afp_emp,
+            "monto_isr": isr,
+            "monto_isss_patronal": isss_patronal,
+            "monto_afp_patronal": afp_patronal,
+            "monto_planilla_unica": monto_planilla_unica,
+            "monto_cotizable": monto_cotizable,
             "total_ingresos": pl.total_ingresos,
-            "total_deducciones": pl.total_deducciones,
-            "monto_neto": pl.monto_neto
+            "total_deducciones": total_deducciones,
+            "monto_neto": monto_neto
         }
         resultado.append(PlanillaResponse(**response_data))
     return resultado
@@ -314,11 +379,37 @@ def obtener_planilla(id: int, db: Session = Depends(get_db)):
     pl = db.query(Planilla).filter(Planilla.id == id).first()
     if not pl:
         raise HTTPException(status_code=404, detail="Planilla no encontrada")
+    
     periodo = db.query(Periodo).filter(Periodo.id == pl.periodo_id).first()
     empleado = db.query(Empleado).filter(Empleado.id == pl.empleado_id).first()
+    
     monto_vacaciones = 0.0
     if periodo and empleado:
         monto_vacaciones = calculos.calcular_monto_vacaciones(pl.sueldo_base, empleado.fecha_ingreso, periodo.fecha_corte)
+    
+    monto_aguinaldo = float(pl.monto_aguinaldo) if pl.monto_aguinaldo else 0.0
+    aguinaldo_gravado = max(0, monto_aguinaldo - TOPE_AGUINALDO_EXENTO)
+    
+    monto_cotizable = (float(pl.sueldo_base) +
+                       float(pl.monto_horas_extras_diurnas) +
+                       float(pl.monto_horas_extras_nocturnas) +
+                       float(pl.monto_horas_nocturnas) +
+                       float(monto_vacaciones) +
+                       float(pl.bono_extra) +
+                       aguinaldo_gravado)
+
+    # Recalcular ISSS, AFP e ISR
+    isss_emp = calculos.calcular_isss(monto_cotizable)
+    afp_emp = calculos.calcular_afp(monto_cotizable)
+    base_isr = monto_cotizable - isss_emp - afp_emp
+    isr = calculos.calcular_isr(base_isr)
+    total_deducciones = isss_emp + afp_emp + isr
+    monto_neto = float(pl.total_ingresos) - total_deducciones
+
+    # Patronales (con tope)
+    isss_patronal = calculos.calcular_isss_patronal(monto_cotizable)
+    afp_patronal = monto_cotizable * calculos.AFP_PATRONAL_PCT
+    monto_planilla_unica = isss_emp + afp_emp + isss_patronal + afp_patronal
 
     response_data = {
         "id": pl.id,
@@ -336,15 +427,18 @@ def obtener_planilla(id: int, db: Session = Depends(get_db)):
         "monto_horas_extras_nocturnas": pl.monto_horas_extras_nocturnas,
         "monto_horas_nocturnas": pl.monto_horas_nocturnas,
         "monto_aguinaldo": pl.monto_aguinaldo,
+        "aguinaldo_gravado": aguinaldo_gravado,
         "monto_vacaciones": monto_vacaciones,
         "monto_quincena25": pl.monto_quincena25,
-        "monto_isss": pl.monto_isss,
-        "monto_afp": pl.monto_afp,
-        "monto_isr": pl.monto_isr,
-        "monto_isss_patronal": pl.monto_isss_patronal,
-        "monto_afp_patronal": pl.monto_afp_patronal,
+        "monto_isss": isss_emp,
+        "monto_afp": afp_emp,
+        "monto_isr": isr,
+        "monto_isss_patronal": isss_patronal,
+        "monto_afp_patronal": afp_patronal,
+        "monto_planilla_unica": monto_planilla_unica,
+        "monto_cotizable": monto_cotizable,
         "total_ingresos": pl.total_ingresos,
-        "total_deducciones": pl.total_deducciones,
-        "monto_neto": pl.monto_neto
+        "total_deducciones": total_deducciones,
+        "monto_neto": monto_neto
     }
     return PlanillaResponse(**response_data)

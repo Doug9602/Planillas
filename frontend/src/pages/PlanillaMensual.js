@@ -1,5 +1,16 @@
 import React from "react";
 
+const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+const formatearFecha = (fecha) => {
+  if (!fecha) return "";
+  const partes = fecha.split("-");
+  const año = partes[0];
+  const mes = parseInt(partes[1], 10);
+  const dia = partes[2];
+  return `${dia}/${meses[mes - 1]}/${año}`;
+};
+
 export default function PlanillaMensual({
   periodos,
   empleados,
@@ -11,7 +22,6 @@ export default function PlanillaMensual({
   const planillasFiltradas = planillas.filter(p => p.periodo_id === periodoSeleccionado);
   const periodo = periodos.find(p => p.id === periodoSeleccionado);
 
-  // Si no hay período seleccionado, mostrar selector con hero
   if (!periodoSeleccionado) {
     return (
       <>
@@ -41,7 +51,7 @@ export default function PlanillaMensual({
               <option value="">-- Seleccionar período --</option>
               {periodos.map(p => (
                 <option key={p.id} value={p.id}>
-                  {p.mes}/{p.año} (corte {p.fecha_corte})
+                  {formatearFecha(p.fecha_corte)}
                 </option>
               ))}
             </select>
@@ -58,13 +68,13 @@ export default function PlanillaMensual({
           <div className="overlay">
             <h1 style={{ fontSize: "32px" }}>Planilla Mensual</h1>
             <p style={{ color: "#ddd", marginTop: "8px" }}>
-              {periodo?.mes}/{periodo?.año} - No hay planillas registradas
+              {formatearFecha(periodo?.fecha_corte)} - No hay planillas registradas
             </p>
           </div>
         </section>
         <div style={{ padding: "40px 20px", background: "#f5f5f5", textAlign: "center" }}>
           <div style={{ maxWidth: "600px", margin: "auto", background: "white", borderRadius: "12px", padding: "30px" }}>
-            <h2>Planilla del período {periodo?.mes}/{periodo?.año}</h2>
+            <h2>Planilla del período {formatearFecha(periodo?.fecha_corte)}</h2>
             <p>No hay planillas registradas para este período.</p>
             <button
               onClick={() => setPeriodoSeleccionado(null)}
@@ -92,7 +102,7 @@ export default function PlanillaMensual({
         <div className="overlay">
           <h1 style={{ fontSize: "32px" }}>Planilla Mensual</h1>
           <p style={{ color: "#ddd", marginTop: "8px" }}>
-            {periodo?.mes}/{periodo?.año} - Resumen consolidado
+            {formatearFecha(periodo?.fecha_corte)} - Resumen consolidado
           </p>
         </div>
       </section>
@@ -101,7 +111,7 @@ export default function PlanillaMensual({
         <div style={{ maxWidth: "100%", margin: "auto", background: "white", borderRadius: "12px", padding: "20px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
             <h2 style={{ color: "#d71920" }}>
-              Planilla Mensual - {periodo?.mes}/{periodo?.año}
+              Planilla Mensual - {formatearFecha(periodo?.fecha_corte)}
             </h2>
             <button
               onClick={() => setPeriodoSeleccionado(null)}
@@ -134,6 +144,7 @@ export default function PlanillaMensual({
                   <th style={{ padding: "8px", textAlign: "center", whiteSpace: "nowrap" }}>Bono</th>
                   <th style={{ padding: "8px", textAlign: "center", whiteSpace: "nowrap" }}>Vacaciones</th>
                   <th style={{ padding: "8px", textAlign: "center", whiteSpace: "nowrap" }}>Aguinaldo</th>
+                  <th style={{ padding: "8px", textAlign: "center", whiteSpace: "nowrap" }}>Aguinaldo Gravado</th>
                   <th style={{ padding: "8px", textAlign: "center", whiteSpace: "nowrap" }}>Q.25</th>
                   <th style={{ padding: "8px", textAlign: "center", whiteSpace: "nowrap" }}>Total Ingresos</th>
                   <th style={{ padding: "8px", textAlign: "center", whiteSpace: "nowrap" }}>ISSS</th>
@@ -141,6 +152,7 @@ export default function PlanillaMensual({
                   <th style={{ padding: "8px", textAlign: "center", whiteSpace: "nowrap" }}>ISR</th>
                   <th style={{ padding: "8px", textAlign: "center", whiteSpace: "nowrap" }}>Total Deducc.</th>
                   <th style={{ padding: "8px", textAlign: "center", whiteSpace: "nowrap" }}>Neto</th>
+                  <th style={{ padding: "8px", textAlign: "center", whiteSpace: "nowrap" }}>Planilla Única</th>
                   <th style={{ padding: "8px", textAlign: "center", whiteSpace: "nowrap" }}>Acciones</th>
                 </tr>
               </thead>
@@ -161,6 +173,7 @@ export default function PlanillaMensual({
                       <td style={{ padding: "8px", textAlign: "right" }}>${pl.bono_extra?.toFixed(2)}</td>
                       <td style={{ padding: "8px", textAlign: "right" }}>${pl.monto_vacaciones?.toFixed(2)}</td>
                       <td style={{ padding: "8px", textAlign: "right" }}>${pl.monto_aguinaldo?.toFixed(2)}</td>
+                      <td style={{ padding: "8px", textAlign: "right" }}>${pl.aguinaldo_gravado?.toFixed(2)}</td>
                       <td style={{ padding: "8px", textAlign: "right" }}>${pl.monto_quincena25?.toFixed(2)}</td>
                       <td style={{ padding: "8px", textAlign: "right", fontWeight: "bold" }}>${pl.total_ingresos?.toFixed(2)}</td>
                       <td style={{ padding: "8px", textAlign: "right" }}>${pl.monto_isss?.toFixed(2)}</td>
@@ -168,6 +181,7 @@ export default function PlanillaMensual({
                       <td style={{ padding: "8px", textAlign: "right" }}>${pl.monto_isr?.toFixed(2)}</td>
                       <td style={{ padding: "8px", textAlign: "right" }}>${pl.total_deducciones?.toFixed(2)}</td>
                       <td style={{ padding: "8px", textAlign: "right", fontWeight: "bold", color: "#d71920" }}>${pl.monto_neto?.toFixed(2)}</td>
+                      <td style={{ padding: "8px", textAlign: "right", fontWeight: "bold" }}>${pl.monto_planilla_unica?.toFixed(2)}</td>
                       <td style={{ padding: "8px", textAlign: "center" }}>
                         <button
                           onClick={() => onVerDetalle(pl.id)}

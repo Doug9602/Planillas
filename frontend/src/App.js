@@ -21,7 +21,7 @@ export default function App() {
 
   const empleadosState = useEmpleados();
   const periodosState = usePeriodos();
-  const planillasState = usePlanillas();
+  const planillasState = usePlanillas(empleadosState.empleados);
 
   // --- Navegación ---
   const irAInicio = () => {
@@ -111,6 +111,7 @@ export default function App() {
           cargarPeriodo={periodosState.cargarPeriodo}
           limpiarFormularioPeriodo={periodosState.limpiarFormularioPeriodo}
           generarProximoPeriodo={periodosState.generarProximoPeriodo}
+          actualizarPeriodo={periodosState.actualizarPeriodo}   
         />
       )}
 

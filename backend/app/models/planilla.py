@@ -33,7 +33,11 @@ class Planilla(Base):
     monto_isss_patronal = Column(Numeric(10,2), default=0)
     monto_afp_patronal = Column(Numeric(10,2), default=0)
 
+    # NUEVO: Monto a depositar en planilla única
+    monto_planilla_unica = Column(Numeric(10,2), default=0)
+
     # Totales
     total_ingresos = Column(Numeric(10,2), default=0)
     total_deducciones = Column(Numeric(10,2), default=0)
     monto_neto = Column(Numeric(10,2), default=0)
+    monto_cotizable = Column(Numeric(10,2), default=0)

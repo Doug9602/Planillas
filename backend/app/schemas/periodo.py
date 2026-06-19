@@ -6,6 +6,7 @@ class PeriodoCreate(BaseModel):
     año: int
     fecha_corte: date
     total_general: float = 0
+    descripcion: str | None = None
 
 class PeriodoResponse(PeriodoCreate):
     id: int

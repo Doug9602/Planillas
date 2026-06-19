@@ -1,6 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
+import ModalISR from "../components/ModalISR";
+import ModalBaseImponible from "../components/ModalBaseImponible";
 
 export default function DetallePlanilla({ planilla, empleados, periodos, onVolver }) {
+  const [isModalISROpen, setIsModalISROpen] = useState(false);
+  const [isModalBaseOpen, setIsModalBaseOpen] = useState(false);
   const pl = planilla;
   const emp = empleados.find(e => e.id === pl.empleado_id);
   const per = periodos.find(p => p.id === pl.periodo_id);
@@ -30,28 +34,83 @@ export default function DetallePlanilla({ planilla, empleados, periodos, onVolve
               <tr><td style={{ padding: "8px", fontWeight: "bold" }}>Subsidio alimentación</td><td>${pl.subsidio_alimentacion?.toFixed(2)}</td></tr>
               <tr><td style={{ padding: "8px", fontWeight: "bold" }}>Bono extra</td><td>${pl.bono_extra?.toFixed(2)}</td></tr>
 
-              {/* Solo Monto Vacaciones (sin bonificación) */}
               <tr><td style={{ padding: "8px", fontWeight: "bold" }}>Monto Vacaciones</td><td>${pl.monto_vacaciones?.toFixed(2)}</td></tr>
 
               <tr><td style={{ padding: "8px", fontWeight: "bold" }}>Aguinaldo</td><td>${pl.monto_aguinaldo?.toFixed(2)}</td></tr>
+              <tr><td style={{ padding: "8px", fontWeight: "bold" }}>Aguinaldo Gravado</td><td>${pl.aguinaldo_gravado?.toFixed(2)}</td></tr>
+
               <tr><td style={{ padding: "8px", fontWeight: "bold" }}>Quincena 25</td><td>${pl.monto_quincena25?.toFixed(2)}</td></tr>
+
               <tr style={{ borderTop: "2px solid #d71920" }}>
                 <td style={{ padding: "8px", fontWeight: "bold", fontSize: "16px" }}>Total Ingresos</td>
                 <td style={{ fontWeight: "bold", fontSize: "16px" }}>${pl.total_ingresos?.toFixed(2)}</td>
               </tr>
+
+              <tr>
+                <td style={{ padding: "8px", fontWeight: "bold" }}>
+                  Monto Cotizable
+                  <span
+                    style={{
+                      marginLeft: "8px",
+                      cursor: "pointer",
+                      color: "#007bff",
+                      fontWeight: "normal",
+                      fontSize: "14px",
+                    }}
+                    onClick={() => setIsModalBaseOpen(true)}
+                    title="Ver cómo se calcula la base imponible"
+                  >
+                    ⓘ
+                  </span>
+                </td>
+                <td>${pl.monto_cotizable?.toFixed(2)}</td>
+              </tr>
+
               <tr><td style={{ padding: "8px", fontWeight: "bold" }}>ISSS (empleado)</td><td>${pl.monto_isss?.toFixed(2)}</td></tr>
               <tr><td style={{ padding: "8px", fontWeight: "bold" }}>AFP (empleado)</td><td>${pl.monto_afp?.toFixed(2)}</td></tr>
-              <tr><td style={{ padding: "8px", fontWeight: "bold" }}>ISR (Renta)</td><td>${pl.monto_isr?.toFixed(2)}</td></tr>
+              
+              <tr>
+                <td style={{ padding: "8px", fontWeight: "bold" }}>
+                  ISR (Renta)
+                  <span 
+                    style={{ 
+                      marginLeft: "8px", 
+                      cursor: "pointer", 
+                      color: "#007bff",
+                      fontWeight: "normal",
+                      fontSize: "14px",
+                      display: "inline-block"
+                    }}
+                    onClick={() => setIsModalISROpen(true)}
+                    title="Ver tabla de descuentos de ISR"
+                  >
+                    ⓘ
+                  </span>
+                </td>
+                <td>${pl.monto_isr?.toFixed(2)}</td>
+              </tr>
+
               <tr style={{ borderTop: "2px solid #d71920" }}>
                 <td style={{ padding: "8px", fontWeight: "bold", fontSize: "16px" }}>Total Deducciones</td>
                 <td style={{ fontWeight: "bold", fontSize: "16px" }}>${pl.total_deducciones?.toFixed(2)}</td>
               </tr>
+
               <tr style={{ borderTop: "2px solid #d71920", background: "#f9f9f9" }}>
                 <td style={{ padding: "10px", fontWeight: "bold", fontSize: "18px", color: "#d71920" }}>Neto a Pagar</td>
                 <td style={{ fontWeight: "bold", fontSize: "18px", color: "#d71920" }}>${pl.monto_neto?.toFixed(2)}</td>
               </tr>
+
               <tr><td style={{ padding: "8px", fontWeight: "bold" }}>ISSS Patronal</td><td>${pl.monto_isss_patronal?.toFixed(2)}</td></tr>
               <tr><td style={{ padding: "8px", fontWeight: "bold" }}>AFP Patronal</td><td>${pl.monto_afp_patronal?.toFixed(2)}</td></tr>
+
+              <tr style={{ borderTop: "2px solid #d71920", background: "#fff8f0" }}>
+                <td style={{ padding: "10px", fontWeight: "bold", fontSize: "16px", color: "#d71920" }}>
+                  💰 Monto a depositar planilla única
+                </td>
+                <td style={{ fontWeight: "bold", fontSize: "16px", color: "#d71920" }}>
+                  ${pl.monto_planilla_unica?.toFixed(2)}
+                </td>
+              </tr>
             </tbody>
           </table>
           <div style={{ marginTop: "30px", textAlign: "center" }}>
@@ -61,6 +120,17 @@ export default function DetallePlanilla({ planilla, empleados, periodos, onVolve
           </div>
         </div>
       </div>
+
+      <ModalBaseImponible
+        isOpen={isModalBaseOpen}
+        onClose={() => setIsModalBaseOpen(false)}
+        planilla={pl}
+      />
+
+      <ModalISR
+        isOpen={isModalISROpen}
+        onClose={() => setIsModalISROpen(false)}
+      />
     </>
   );
 }

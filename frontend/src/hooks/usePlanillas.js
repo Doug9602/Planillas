@@ -4,7 +4,7 @@ import { toast } from "react-hot-toast";
 import { confirmarAccion } from "../utils/alerts";
 import { manejarError } from "../utils/errorHandler";
 
-export function usePlanillas() {
+export function usePlanillas(empleados) {   // ← RECIBE empleados
   const [planillas, setPlanillas] = useState([]);
   const [nuevaPlanilla, setNuevaPlanilla] = useState({
     periodo_id: "",
@@ -40,6 +40,19 @@ export function usePlanillas() {
     };
     cargarPlanillas();
   }, []);
+
+  // NUEVO: Auto-llenar sueldo_base al seleccionar empleado
+  useEffect(() => {
+    if (nuevaPlanilla.empleado_id && empleados.length > 0) {
+      const empleado = empleados.find(emp => emp.id === parseInt(nuevaPlanilla.empleado_id));
+      if (empleado && empleado.salario_mensual) {
+        setNuevaPlanilla(prev => ({
+          ...prev,
+          sueldo_base: empleado.salario_mensual
+        }));
+      }
+    }
+  }, [nuevaPlanilla.empleado_id, empleados]);
 
   // Crear planilla
   const crearPlanilla = async (e) => {

@@ -64,11 +64,16 @@ export default function Planillas({
                     style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #ddd" }}
                   >
                     <option value="">Seleccione período</option>
-                    {periodos.map(per => (
-                      <option key={per.id} value={per.id}>
-                        Período {per.mes}/{per.año} (corte {per.fecha_corte})
-                      </option>
-                    ))}
+                    {periodos.map(per => {
+                      const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                      const partes = per.fecha_corte.split("-");
+                      const fechaFormateada = `${partes[2]}/${meses[parseInt(partes[1], 10) - 1]}/${partes[0]}`;
+                      return (
+                        <option key={per.id} value={per.id}>
+                          {fechaFormateada}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
                 <div>
