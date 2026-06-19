@@ -13,17 +13,16 @@ import Home from "./pages/Home";
 import Empleados from "./pages/Empleados";
 import Periodos from "./pages/Periodos";
 import Planillas from "./pages/Planillas";
-import PlanillaMensual from "./pages/PlanillaMensual";  // Importamos la nueva página
+import PlanillaMensual from "./pages/PlanillaMensual";
 
 export default function App() {
   const [vista, setVista] = useState("home");
-  const [periodoSeleccionado, setPeriodoSeleccionado] = useState(null); // Para la vista mensual
+  const [periodoSeleccionado, setPeriodoSeleccionado] = useState(null);
 
   const empleadosState = useEmpleados();
   const periodosState = usePeriodos();
-  const planillasState = usePlanillas(empleadosState.empleados);
+  const planillasState = usePlanillas();
 
-  // --- Navegación ---
   const irAInicio = () => {
     setVista("home");
     setPeriodoSeleccionado(null);
@@ -56,18 +55,16 @@ export default function App() {
 
   const irAPlanillaMensual = () => {
     setVista("planillaMensual");
-    setPeriodoSeleccionado(null); // Reseteamos el período al entrar
+    setPeriodoSeleccionado(null);
     empleadosState.limpiarFormularioEmpleado();
     periodosState.limpiarFormularioPeriodo();
     planillasState.limpiarFormularioPlanilla();
   };
 
-  // Función para ver detalle de una planilla desde la tabla mensual
   const verDetalleDesdeMensual = (planillaId) => {
     const pl = planillasState.planillas.find(p => p.id === planillaId);
     if (pl) {
       planillasState.verDetalle(pl);
-      // Mantenemos la vista en "planillas" para que el detalle se muestre allí
       setVista("planillas");
     }
   };
@@ -79,7 +76,7 @@ export default function App() {
         onEmpleados={irAEmpleados}
         onPeriodos={irAPeriodos}
         onPlanillas={irAPlanillas}
-        onPlanillaMensual={irAPlanillaMensual}  // Nueva prop
+        onPlanillaMensual={irAPlanillaMensual}
       />
 
       {vista === "home" && <Home onIrAEmpleados={irAEmpleados} />}
@@ -111,11 +108,9 @@ export default function App() {
           cargarPeriodo={periodosState.cargarPeriodo}
           limpiarFormularioPeriodo={periodosState.limpiarFormularioPeriodo}
           generarProximoPeriodo={periodosState.generarProximoPeriodo}
-          actualizarPeriodo={periodosState.actualizarPeriodo}   
         />
       )}
 
-      {/* Página de Planillas (con detalle incluido) */}
       {vista === "planillas" && (
         <Planillas
           planillas={planillasState.planillas}
@@ -136,7 +131,6 @@ export default function App() {
         />
       )}
 
-      {/* Nueva vista: Planilla Mensual tipo spreadsheet */}
       {vista === "planillaMensual" && (
         <PlanillaMensual
           periodos={periodosState.periodos}

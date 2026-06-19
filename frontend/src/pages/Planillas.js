@@ -64,16 +64,11 @@ export default function Planillas({
                     style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #ddd" }}
                   >
                     <option value="">Seleccione período</option>
-                    {periodos.map(per => {
-                      const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-                      const partes = per.fecha_corte.split("-");
-                      const fechaFormateada = `${partes[2]}/${meses[parseInt(partes[1], 10) - 1]}/${partes[0]}`;
-                      return (
-                        <option key={per.id} value={per.id}>
-                          {fechaFormateada}
-                        </option>
-                      );
-                    })}
+                    {periodos.map(per => (
+                      <option key={per.id} value={per.id}>
+                        Período {per.mes}/{per.año} (corte {per.fecha_corte})
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
@@ -250,7 +245,7 @@ export default function Planillas({
                             background: "#28a745",
                             color: "white",
                             border: "none",
-                            padding: "4px 12px",
+                            padding: "4px 10px",
                             borderRadius: "4px",
                             cursor: "pointer",
                             marginRight: "6px"
@@ -264,7 +259,7 @@ export default function Planillas({
                             background: "#007bff",
                             color: "white",
                             border: "none",
-                            padding: "4px 12px",
+                            padding: "4px 10px",
                             borderRadius: "4px",
                             cursor: "pointer",
                             marginRight: "6px"
@@ -278,7 +273,7 @@ export default function Planillas({
                             background: "#d71920",
                             color: "white",
                             border: "none",
-                            padding: "4px 12px",
+                            padding: "4px 10px",
                             borderRadius: "4px",
                             cursor: "pointer"
                           }}
