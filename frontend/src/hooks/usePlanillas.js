@@ -4,7 +4,9 @@ import { toast } from "react-hot-toast";
 import { confirmarAccion } from "../utils/alerts";
 import { manejarError } from "../utils/errorHandler";
 
-export function usePlanillas(empleados) {   // ← RECIBE empleados
+export function usePlanillas(empleados = []) {
+  const safeEmpleados = Array.isArray(empleados) ? empleados : [];
+
   const [planillas, setPlanillas] = useState([]);
   const [nuevaPlanilla, setNuevaPlanilla] = useState({
     periodo_id: "",
@@ -15,7 +17,8 @@ export function usePlanillas(empleados) {   // ← RECIBE empleados
     horas_nocturnas: 0,
     subsidio_alimentacion: 0,
     bono_extra: 0,
-    quincena25_aplica: false
+    quincena25_aplica: false,
+    descuentos_adicionales: 0  // <--- NUEVO
   });
   const [planillaCargado, setPlanillaCargado] = useState(false);
   const [planillaEditandoId, setPlanillaEditandoId] = useState(null);
@@ -41,10 +44,10 @@ export function usePlanillas(empleados) {   // ← RECIBE empleados
     cargarPlanillas();
   }, []);
 
-  // NUEVO: Auto-llenar sueldo_base al seleccionar empleado
+  // Auto-llenar sueldo_base al seleccionar empleado
   useEffect(() => {
-    if (nuevaPlanilla.empleado_id && empleados.length > 0) {
-      const empleado = empleados.find(emp => emp.id === parseInt(nuevaPlanilla.empleado_id));
+    if (nuevaPlanilla.empleado_id && safeEmpleados.length > 0) {
+      const empleado = safeEmpleados.find(emp => emp.id === parseInt(nuevaPlanilla.empleado_id));
       if (empleado && empleado.salario_mensual) {
         setNuevaPlanilla(prev => ({
           ...prev,
@@ -52,7 +55,7 @@ export function usePlanillas(empleados) {   // ← RECIBE empleados
         }));
       }
     }
-  }, [nuevaPlanilla.empleado_id, empleados]);
+  }, [nuevaPlanilla.empleado_id, safeEmpleados]);
 
   // Crear planilla
   const crearPlanilla = async (e) => {
@@ -74,7 +77,8 @@ export function usePlanillas(empleados) {   // ← RECIBE empleados
           horas_nocturnas: nuevaPlanilla.horas_nocturnas,
           subsidio_alimentacion: nuevaPlanilla.subsidio_alimentacion,
           bono_extra: nuevaPlanilla.bono_extra,
-          quincena25_aplica: nuevaPlanilla.quincena25_aplica
+          quincena25_aplica: nuevaPlanilla.quincena25_aplica,
+          descuentos_adicionales: nuevaPlanilla.descuentos_adicionales || 0  // <--- NUEVO
         }),
       });
       if (res.ok) {
@@ -112,7 +116,8 @@ export function usePlanillas(empleados) {   // ← RECIBE empleados
           horas_nocturnas: nuevaPlanilla.horas_nocturnas,
           subsidio_alimentacion: nuevaPlanilla.subsidio_alimentacion,
           bono_extra: nuevaPlanilla.bono_extra,
-          quincena25_aplica: nuevaPlanilla.quincena25_aplica
+          quincena25_aplica: nuevaPlanilla.quincena25_aplica,
+          descuentos_adicionales: nuevaPlanilla.descuentos_adicionales || 0  // <--- NUEVO
         }),
       });
       if (res.ok) {
@@ -164,7 +169,7 @@ export function usePlanillas(empleados) {   // ← RECIBE empleados
     setVistaDetalle(false);
   };
 
-  // Cargar datos al formulario para edición
+  // Cargar datos al formulario para edición (INCLUYE descuentos_adicionales)
   const cargarPlanilla = (p) => {
     setNuevaPlanilla({
       periodo_id: p.periodo_id,
@@ -175,7 +180,8 @@ export function usePlanillas(empleados) {   // ← RECIBE empleados
       horas_nocturnas: p.horas_nocturnas || 0,
       subsidio_alimentacion: p.subsidio_alimentacion || 0,
       bono_extra: p.bono_extra || 0,
-      quincena25_aplica: p.quincena25_aplica || false
+      quincena25_aplica: p.quincena25_aplica || false,
+      descuentos_adicionales: p.descuentos_adicionales || 0   // <--- NUEVO
     });
     setPlanillaCargado(true);
     setPlanillaEditandoId(p.id);
@@ -191,7 +197,8 @@ export function usePlanillas(empleados) {   // ← RECIBE empleados
       horas_nocturnas: 0,
       subsidio_alimentacion: 0,
       bono_extra: 0,
-      quincena25_aplica: false
+      quincena25_aplica: false,
+      descuentos_adicionales: 0   // <--- NUEVO
     });
     setPlanillaCargado(false);
     setPlanillaEditandoId(null);

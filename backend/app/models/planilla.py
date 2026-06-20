@@ -12,7 +12,6 @@ class Planilla(Base):
     sueldo_base = Column(Numeric(10,2), nullable=False)
     horas_extras_diurnas = Column(Numeric(5,2), default=0)
     horas_extras_nocturnas = Column(Numeric(5,2), default=0)
-    horas_nocturnas = Column(Numeric(5,2), default=0)
     subsidio_alimentacion = Column(Numeric(10,2), default=0)
     bono_extra = Column(Numeric(10,2), default=0)
     quincena25_aplica = Column(Boolean, default=False)
@@ -21,7 +20,6 @@ class Planilla(Base):
     valor_hora = Column(Numeric(10,4), default=0)
     monto_horas_extras_diurnas = Column(Numeric(10,2), default=0)
     monto_horas_extras_nocturnas = Column(Numeric(10,2), default=0)
-    monto_horas_nocturnas = Column(Numeric(10,2), default=0)
     monto_aguinaldo = Column(Numeric(10,2), default=0)
     monto_vacaciones = Column(Numeric(10,2), default=0)
     monto_quincena25 = Column(Numeric(10,2), default=0)
@@ -32,6 +30,7 @@ class Planilla(Base):
     monto_isr = Column(Numeric(10,2), default=0)
     monto_isss_patronal = Column(Numeric(10,2), default=0)
     monto_afp_patronal = Column(Numeric(10,2), default=0)
+    descuentos_adicionales = Column(Numeric(10,2), default=0)
 
     # NUEVO: Monto a depositar en planilla única
     monto_planilla_unica = Column(Numeric(10,2), default=0)

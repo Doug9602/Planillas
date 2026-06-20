@@ -21,7 +21,7 @@ export default function App() {
 
   const empleadosState = useEmpleados();
   const periodosState = usePeriodos();
-  const planillasState = usePlanillas();
+  const planillasState = usePlanillas(empleadosState.empleados);
 
   const irAInicio = () => {
     setVista("home");
@@ -104,6 +104,7 @@ export default function App() {
           setNuevoPeriodo={periodosState.setNuevoPeriodo}
           periodoCargado={periodosState.periodoCargado}
           crearPeriodo={periodosState.crearPeriodo}
+          actualizarPeriodo={periodosState.actualizarPeriodo}
           eliminarPeriodo={periodosState.eliminarPeriodo}
           cargarPeriodo={periodosState.cargarPeriodo}
           limpiarFormularioPeriodo={periodosState.limpiarFormularioPeriodo}

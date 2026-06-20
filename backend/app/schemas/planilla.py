@@ -6,9 +6,9 @@ class PlanillaCreate(BaseModel):
     sueldo_base: float
     horas_extras_diurnas: float = 0
     horas_extras_nocturnas: float = 0
-    horas_nocturnas: float = 0
     subsidio_alimentacion: float = 0
     bono_extra: float = 0
+    descuentos_adicionales: float = 0
     quincena25_aplica: bool = False
 
 class PlanillaUpdate(PlanillaCreate):
@@ -19,7 +19,6 @@ class PlanillaResponse(PlanillaCreate):
     valor_hora: float
     monto_horas_extras_diurnas: float
     monto_horas_extras_nocturnas: float
-    monto_horas_nocturnas: float
     monto_vacaciones: float         
     monto_aguinaldo: float
     aguinaldo_gravado: float
@@ -34,6 +33,7 @@ class PlanillaResponse(PlanillaCreate):
     monto_neto: float
     monto_planilla_unica: float 
     monto_cotizable: float 
+    descuentos_adicionales: float = 0
 
     class Config:
         from_attributes = True

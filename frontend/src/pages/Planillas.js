@@ -2,10 +2,10 @@ import React from "react";
 import DetallePlanilla from "./DetallePlanilla";
 
 export default function Planillas({
-  planillas,
-  periodos,
-  empleados,
-  nuevaPlanilla,
+  planillas = [],
+  periodos = [],
+  empleados = [],
+  nuevaPlanilla = {},
   setNuevaPlanilla,
   planillaCargado,
   crearPlanilla,
@@ -42,29 +42,39 @@ export default function Planillas({
 
       <div style={{ padding: "30px 20px", background: "#f5f5f5" }}>
         <div style={{ maxWidth: "1200px", margin: "auto" }}>
-          <div style={{
-            background: "white",
-            borderRadius: "16px",
-            boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
-            padding: "30px 35px",
-            marginBottom: "30px"
-          }}>
+          <div
+            style={{
+              background: "white",
+              borderRadius: "16px",
+              boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+              padding: "30px 35px",
+              marginBottom: "30px",
+            }}
+          >
             <h2 style={{ marginBottom: "25px", color: "#d71920", fontSize: "24px" }}>
               {planillaCargado ? "✏️ Editar Planilla" : "📝 Registrar Nueva Planilla"}
             </h2>
 
             <form onSubmit={planillaCargado ? actualizarPlanilla : crearPlanilla}>
+              {/* Período y Empleado */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
                 <div>
                   <label style={{ fontWeight: "600", display: "block", marginBottom: "6px" }}>Período</label>
                   <select
                     value={nuevaPlanilla.periodo_id}
-                    onChange={e => setNuevaPlanilla({ ...nuevaPlanilla, periodo_id: e.target.value })}
+                    onChange={(e) =>
+                      setNuevaPlanilla({ ...nuevaPlanilla, periodo_id: e.target.value })
+                    }
                     required
-                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #ddd" }}
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid #ddd",
+                    }}
                   >
                     <option value="">Seleccione período</option>
-                    {periodos.map(per => (
+                    {periodos.map((per) => (
                       <option key={per.id} value={per.id}>
                         Período {per.mes}/{per.año} (corte {per.fecha_corte})
                       </option>
@@ -75,12 +85,19 @@ export default function Planillas({
                   <label style={{ fontWeight: "600", display: "block", marginBottom: "6px" }}>Empleado</label>
                   <select
                     value={nuevaPlanilla.empleado_id}
-                    onChange={e => setNuevaPlanilla({ ...nuevaPlanilla, empleado_id: e.target.value })}
+                    onChange={(e) =>
+                      setNuevaPlanilla({ ...nuevaPlanilla, empleado_id: e.target.value })
+                    }
                     required
-                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #ddd" }}
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid #ddd",
+                    }}
                   >
                     <option value="">Seleccione empleado</option>
-                    {empleados.map(emp => (
+                    {empleados.map((emp) => (
                       <option key={emp.id} value={emp.id}>
                         {emp.nombre} - DUI: {emp.dui} - {emp.puesto}
                       </option>
@@ -89,17 +106,28 @@ export default function Planillas({
                 </div>
               </div>
 
+              {/* Sueldo y Subsidio */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
                 <div>
                   <label style={{ fontWeight: "600", display: "block", marginBottom: "6px" }}>Sueldo base mensual (USD)</label>
                   <input
                     type="number"
                     step="0.01"
-                    value={nuevaPlanilla.sueldo_base || ''}
+                    value={nuevaPlanilla.sueldo_base || ""}
                     onFocus={(e) => e.target.select()}
-                    onChange={e => setNuevaPlanilla({ ...nuevaPlanilla, sueldo_base: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setNuevaPlanilla({
+                        ...nuevaPlanilla,
+                        sueldo_base: parseFloat(e.target.value) || 0,
+                      })
+                    }
                     required
-                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #ddd" }}
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid #ddd",
+                    }}
                   />
                 </div>
                 <div>
@@ -107,24 +135,45 @@ export default function Planillas({
                   <input
                     type="number"
                     step="0.01"
-                    value={nuevaPlanilla.subsidio_alimentacion || ''}
+                    value={nuevaPlanilla.subsidio_alimentacion || ""}
                     onFocus={(e) => e.target.select()}
-                    onChange={e => setNuevaPlanilla({ ...nuevaPlanilla, subsidio_alimentacion: parseFloat(e.target.value) || 0 })}
-                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #ddd" }}
+                    onChange={(e) =>
+                      setNuevaPlanilla({
+                        ...nuevaPlanilla,
+                        subsidio_alimentacion: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid #ddd",
+                    }}
                   />
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "20px", marginBottom: "20px" }}>
+              {/* Horas extras (solo diurnas y nocturnas) */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
                 <div>
                   <label style={{ fontWeight: "600", display: "block", marginBottom: "6px" }}>Horas extra diurnas</label>
                   <input
                     type="number"
                     step="0.5"
-                    value={nuevaPlanilla.horas_extras_diurnas || ''}
+                    value={nuevaPlanilla.horas_extras_diurnas || ""}
                     onFocus={(e) => e.target.select()}
-                    onChange={e => setNuevaPlanilla({ ...nuevaPlanilla, horas_extras_diurnas: parseFloat(e.target.value) || 0 })}
-                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #ddd" }}
+                    onChange={(e) =>
+                      setNuevaPlanilla({
+                        ...nuevaPlanilla,
+                        horas_extras_diurnas: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid #ddd",
+                    }}
                   />
                 </div>
                 <div>
@@ -132,63 +181,108 @@ export default function Planillas({
                   <input
                     type="number"
                     step="0.5"
-                    value={nuevaPlanilla.horas_extras_nocturnas || ''}
+                    value={nuevaPlanilla.horas_extras_nocturnas || ""}
                     onFocus={(e) => e.target.select()}
-                    onChange={e => setNuevaPlanilla({ ...nuevaPlanilla, horas_extras_nocturnas: parseFloat(e.target.value) || 0 })}
-                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #ddd" }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontWeight: "600", display: "block", marginBottom: "6px" }}>Horas nocturnas normales</label>
-                  <input
-                    type="number"
-                    step="0.5"
-                    value={nuevaPlanilla.horas_nocturnas || ''}
-                    onFocus={(e) => e.target.select()}
-                    onChange={e => setNuevaPlanilla({ ...nuevaPlanilla, horas_nocturnas: parseFloat(e.target.value) || 0 })}
-                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #ddd" }}
+                    onChange={(e) =>
+                      setNuevaPlanilla({
+                        ...nuevaPlanilla,
+                        horas_extras_nocturnas: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid #ddd",
+                    }}
                   />
                 </div>
               </div>
 
+              {/* Bono extra y Descuentos adicionales */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
                 <div>
                   <label style={{ fontWeight: "600", display: "block", marginBottom: "6px" }}>Bono extra (USD)</label>
                   <input
                     type="number"
                     step="0.01"
-                    value={nuevaPlanilla.bono_extra || ''}
+                    value={nuevaPlanilla.bono_extra || ""}
                     onFocus={(e) => e.target.select()}
-                    onChange={e => setNuevaPlanilla({ ...nuevaPlanilla, bono_extra: parseFloat(e.target.value) || 0 })}
-                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #ddd" }}
+                    onChange={(e) =>
+                      setNuevaPlanilla({
+                        ...nuevaPlanilla,
+                        bono_extra: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid #ddd",
+                    }}
                   />
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px", justifyContent: "center" }}>
-                  <label style={{ fontWeight: "500" }}>
-                    <input
-                      type="checkbox"
-                      checked={nuevaPlanilla.quincena25_aplica}
-                      onChange={e => setNuevaPlanilla({ ...nuevaPlanilla, quincena25_aplica: e.target.checked })}
-                      style={{ marginRight: "8px" }}
-                    />
-                    Pagar Quincena 25 (50% del sueldo base, solo si ≤ $1,500)
+                <div>
+                  <label style={{ fontWeight: "600", display: "block", marginBottom: "6px" }}>
+                    Descuentos adicionales (USD)
                   </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder=""
+                    value={nuevaPlanilla.descuentos_adicionales || ""}
+                    onFocus={(e) => e.target.select()}
+                    onChange={(e) =>
+                      setNuevaPlanilla({
+                        ...nuevaPlanilla,
+                        descuentos_adicionales: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid #ddd",
+                    }}
+                  />
                 </div>
               </div>
 
+              {/* Quincena 25 */}
+              <div style={{ display: "flex", gap: "20px", marginBottom: "20px", alignItems: "center" }}>
+                <label style={{ fontWeight: "500" }}>
+                  <input
+                    type="checkbox"
+                    checked={nuevaPlanilla.quincena25_aplica}
+                    onChange={(e) =>
+                      setNuevaPlanilla({
+                        ...nuevaPlanilla,
+                        quincena25_aplica: e.target.checked,
+                      })
+                    }
+                    style={{ marginRight: "8px" }}
+                  />
+                  Pagar Quincena 25 (50% del sueldo base, solo si ≤ $1,500)
+                </label>
+              </div>
+
+              {/* Botones */}
               <div style={{ display: "flex", gap: "12px", marginTop: "10px" }}>
-                <button type="submit" style={{
-                  background: "#d71920",
-                  color: "white",
-                  border: "none",
-                  padding: "12px 32px",
-                  borderRadius: "30px",
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  transition: "0.2s",
-                  flex: 1
-                }}>
+                <button
+                  type="submit"
+                  style={{
+                    background: "#d71920",
+                    color: "white",
+                    border: "none",
+                    padding: "12px 32px",
+                    borderRadius: "30px",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    transition: "0.2s",
+                    flex: 1,
+                  }}
+                >
                   {planillaCargado ? "Actualizar Planilla" : "Registrar Planilla"}
                 </button>
                 <button
@@ -210,13 +304,16 @@ export default function Planillas({
             </form>
           </div>
 
-          <div style={{
-            background: "white",
-            borderRadius: "16px",
-            boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
-            padding: "20px 25px",
-            overflowX: "auto"
-          }}>
+          {/* Tabla de planillas registradas */}
+          <div
+            style={{
+              background: "white",
+              borderRadius: "16px",
+              boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+              padding: "20px 25px",
+              overflowX: "auto",
+            }}
+          >
             <h3 style={{ marginBottom: "15px", color: "#333" }}>📋 Planillas Registradas</h3>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
               <thead>
@@ -229,61 +326,68 @@ export default function Planillas({
                 </tr>
               </thead>
               <tbody>
-                {planillas.map(pl => {
-                  const emp = empleados.find(e => e.id === pl.empleado_id);
-                  const per = periodos.find(p => p.id === pl.periodo_id);
-                  return (
-                    <tr key={pl.id}>
-                      <td style={{ padding: "8px 8px", textAlign: "left" }}>{pl.id}</td>
-                      <td style={{ padding: "8px 8px", textAlign: "left" }}>{emp ? emp.nombre : "?"}</td>
-                      <td style={{ padding: "8px 8px", textAlign: "left" }}>{per ? `${per.mes}/${per.año}` : "?"}</td>
-                      <td style={{ padding: "8px 8px", textAlign: "right" }}><strong>${pl.monto_neto?.toFixed(2) ?? "0.00"}</strong></td>
-                      <td style={{ padding: "8px 8px", textAlign: "center" }}>
-                        <button
-                          onClick={() => verDetalle(pl)}
-                          style={{
-                            background: "#28a745",
-                            color: "white",
-                            border: "none",
-                            padding: "4px 10px",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            marginRight: "6px"
-                          }}
-                        >
-                          Detalle
-                        </button>
-                        <button
-                          onClick={() => cargarPlanilla(pl)}
-                          style={{
-                            background: "#007bff",
-                            color: "white",
-                            border: "none",
-                            padding: "4px 10px",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            marginRight: "6px"
-                          }}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => eliminarPlanilla(pl.id)}
-                          style={{
-                            background: "#d71920",
-                            color: "white",
-                            border: "none",
-                            padding: "4px 10px",
-                            borderRadius: "4px",
-                            cursor: "pointer"
-                          }}
-                        >
-                          Eliminar
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {Array.isArray(planillas) &&
+                  planillas.map((pl) => {
+                    const emp = empleados.find((e) => e.id === pl.empleado_id);
+                    const per = periodos.find((p) => p.id === pl.periodo_id);
+                    return (
+                      <tr key={pl.id}>
+                        <td style={{ padding: "8px 8px", textAlign: "left" }}>{pl.id}</td>
+                        <td style={{ padding: "8px 8px", textAlign: "left" }}>
+                          {emp ? emp.nombre : "?"}
+                        </td>
+                        <td style={{ padding: "8px 8px", textAlign: "left" }}>
+                          {per ? `${per.mes}/${per.año}` : "?"}
+                        </td>
+                        <td style={{ padding: "8px 8px", textAlign: "right" }}>
+                          <strong>${pl.monto_neto?.toFixed(2) ?? "0.00"}</strong>
+                        </td>
+                        <td style={{ padding: "8px 8px", textAlign: "center" }}>
+                          <button
+                            onClick={() => verDetalle(pl)}
+                            style={{
+                              background: "#28a745",
+                              color: "white",
+                              border: "none",
+                              padding: "4px 10px",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              marginRight: "6px",
+                            }}
+                          >
+                            Detalle
+                          </button>
+                          <button
+                            onClick={() => cargarPlanilla(pl)}
+                            style={{
+                              background: "#007bff",
+                              color: "white",
+                              border: "none",
+                              padding: "4px 10px",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              marginRight: "6px",
+                            }}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => eliminarPlanilla(pl.id)}
+                            style={{
+                              background: "#d71920",
+                              color: "white",
+                              border: "none",
+                              padding: "4px 10px",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Eliminar
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>

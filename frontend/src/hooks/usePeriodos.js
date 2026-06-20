@@ -84,7 +84,6 @@ export function usePeriodos() {
     toast.error("La fecha de corte es obligatoria");
     return;
   }
-
   const fecha = new Date(nuevoPeriodo.fecha_corte);
   const mes = fecha.getMonth() + 1;
   const año = fecha.getFullYear();
