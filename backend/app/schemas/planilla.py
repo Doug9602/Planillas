@@ -10,6 +10,7 @@ class PlanillaCreate(BaseModel):
     bono_extra: float = 0
     descuentos_adicionales: float = 0
     quincena25_aplica: bool = False
+    pagar_aguinaldo: bool = False  # ← NUEVO
 
 class PlanillaUpdate(PlanillaCreate):
     pass
@@ -19,7 +20,7 @@ class PlanillaResponse(PlanillaCreate):
     valor_hora: float
     monto_horas_extras_diurnas: float
     monto_horas_extras_nocturnas: float
-    monto_vacaciones: float         
+    monto_vacaciones: float
     monto_aguinaldo: float
     aguinaldo_gravado: float
     monto_quincena25: float
@@ -31,9 +32,10 @@ class PlanillaResponse(PlanillaCreate):
     total_ingresos: float
     total_deducciones: float
     monto_neto: float
-    monto_planilla_unica: float 
-    monto_cotizable: float 
+    monto_planilla_unica: float
+    monto_cotizable: float
     descuentos_adicionales: float = 0
+    pagar_aguinaldo: bool = False  # ← NUEVO
 
     class Config:
         from_attributes = True

@@ -1,6 +1,11 @@
 import React from "react";
 import DetallePlanilla from "./DetallePlanilla";
 
+const meses = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+];
+
 export default function Planillas({
   planillas = [],
   periodos = [],
@@ -29,6 +34,12 @@ export default function Planillas({
     );
   }
 
+  const periodoSeleccionado = periodos.find(p => p.id === parseInt(nuevaPlanilla.periodo_id));
+  const mesSeleccionado = periodoSeleccionado?.mes;
+
+  const mostrarAguinaldo = mesSeleccionado && [10, 11, 12].includes(mesSeleccionado);
+  const mostrarQuincena25 = mesSeleccionado === 1;
+
   return (
     <>
       <section className="hero" style={{ height: "200px" }}>
@@ -56,7 +67,6 @@ export default function Planillas({
             </h2>
 
             <form onSubmit={planillaCargado ? actualizarPlanilla : crearPlanilla}>
-              {/* Período y Empleado */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
                 <div>
                   <label style={{ fontWeight: "600", display: "block", marginBottom: "6px" }}>Período</label>
@@ -76,7 +86,7 @@ export default function Planillas({
                     <option value="">Seleccione período</option>
                     {periodos.map((per) => (
                       <option key={per.id} value={per.id}>
-                        Período {per.mes}/{per.año} (corte {per.fecha_corte})
+                        {meses[per.mes - 1]}/{per.año}
                       </option>
                     ))}
                   </select>
@@ -106,7 +116,6 @@ export default function Planillas({
                 </div>
               </div>
 
-              {/* Sueldo y Subsidio */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
                 <div>
                   <label style={{ fontWeight: "600", display: "block", marginBottom: "6px" }}>Sueldo base mensual (USD)</label>
@@ -153,7 +162,6 @@ export default function Planillas({
                 </div>
               </div>
 
-              {/* Horas extras (solo diurnas y nocturnas) */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
                 <div>
                   <label style={{ fontWeight: "600", display: "block", marginBottom: "6px" }}>Horas extra diurnas</label>
@@ -199,7 +207,6 @@ export default function Planillas({
                 </div>
               </div>
 
-              {/* Bono extra y Descuentos adicionales */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
                 <div>
                   <label style={{ fontWeight: "600", display: "block", marginBottom: "6px" }}>Bono extra (USD)</label>
@@ -248,25 +255,41 @@ export default function Planillas({
                 </div>
               </div>
 
-              {/* Quincena 25 */}
-              <div style={{ display: "flex", gap: "20px", marginBottom: "20px", alignItems: "center" }}>
-                <label style={{ fontWeight: "500" }}>
-                  <input
-                    type="checkbox"
-                    checked={nuevaPlanilla.quincena25_aplica}
-                    onChange={(e) =>
-                      setNuevaPlanilla({
-                        ...nuevaPlanilla,
-                        quincena25_aplica: e.target.checked,
-                      })
-                    }
-                    style={{ marginRight: "8px" }}
-                  />
-                  Pagar Quincena 25 (50% del sueldo base, solo si ≤ $1,500)
-                </label>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
+                {mostrarAguinaldo && (
+                  <label style={{ fontWeight: "500" }}>
+                    <input
+                      type="checkbox"
+                      checked={nuevaPlanilla.pagar_aguinaldo || false}
+                      onChange={(e) =>
+                        setNuevaPlanilla({
+                          ...nuevaPlanilla,
+                          pagar_aguinaldo: e.target.checked,
+                        })
+                      }
+                      style={{ marginRight: "8px" }}
+                    />
+                    Pagar Aguinaldo (solo una vez al año)
+                  </label>
+                )}
+                {mostrarQuincena25 && (
+                  <label style={{ fontWeight: "500" }}>
+                    <input
+                      type="checkbox"
+                      checked={nuevaPlanilla.quincena25_aplica || false}
+                      onChange={(e) =>
+                        setNuevaPlanilla({
+                          ...nuevaPlanilla,
+                          quincena25_aplica: e.target.checked,
+                        })
+                      }
+                      style={{ marginRight: "8px" }}
+                    />
+                    Pagar Quincena 25 (50% del sueldo base, solo si ≤ $1,500)
+                  </label>
+                )}
               </div>
 
-              {/* Botones */}
               <div style={{ display: "flex", gap: "12px", marginTop: "10px" }}>
                 <button
                   type="submit"
@@ -304,7 +327,6 @@ export default function Planillas({
             </form>
           </div>
 
-          {/* Tabla de planillas registradas */}
           <div
             style={{
               background: "white",
@@ -337,7 +359,7 @@ export default function Planillas({
                           {emp ? emp.nombre : "?"}
                         </td>
                         <td style={{ padding: "8px 8px", textAlign: "left" }}>
-                          {per ? `${per.mes}/${per.año}` : "?"}
+                          {per ? `${meses[per.mes - 1]}/${per.año}` : "?"}
                         </td>
                         <td style={{ padding: "8px 8px", textAlign: "right" }}>
                           <strong>${pl.monto_neto?.toFixed(2) ?? "0.00"}</strong>

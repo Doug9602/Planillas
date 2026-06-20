@@ -18,7 +18,8 @@ export function usePlanillas(empleados = []) {
     subsidio_alimentacion: 0,
     bono_extra: 0,
     quincena25_aplica: false,
-    descuentos_adicionales: 0  // <--- NUEVO
+    descuentos_adicionales: 0,
+    pagar_aguinaldo: false
   });
   const [planillaCargado, setPlanillaCargado] = useState(false);
   const [planillaEditandoId, setPlanillaEditandoId] = useState(null);
@@ -78,7 +79,8 @@ export function usePlanillas(empleados = []) {
           subsidio_alimentacion: nuevaPlanilla.subsidio_alimentacion,
           bono_extra: nuevaPlanilla.bono_extra,
           quincena25_aplica: nuevaPlanilla.quincena25_aplica,
-          descuentos_adicionales: nuevaPlanilla.descuentos_adicionales || 0  // <--- NUEVO
+          descuentos_adicionales: nuevaPlanilla.descuentos_adicionales || 0,
+          pagar_aguinaldo: nuevaPlanilla.pagar_aguinaldo || false
         }),
       });
       if (res.ok) {
@@ -117,7 +119,8 @@ export function usePlanillas(empleados = []) {
           subsidio_alimentacion: nuevaPlanilla.subsidio_alimentacion,
           bono_extra: nuevaPlanilla.bono_extra,
           quincena25_aplica: nuevaPlanilla.quincena25_aplica,
-          descuentos_adicionales: nuevaPlanilla.descuentos_adicionales || 0  // <--- NUEVO
+          descuentos_adicionales: nuevaPlanilla.descuentos_adicionales || 0,
+          pagar_aguinaldo: nuevaPlanilla.pagar_aguinaldo || false
         }),
       });
       if (res.ok) {
@@ -169,7 +172,7 @@ export function usePlanillas(empleados = []) {
     setVistaDetalle(false);
   };
 
-  // Cargar datos al formulario para edición (INCLUYE descuentos_adicionales)
+  // Cargar datos al formulario para edición
   const cargarPlanilla = (p) => {
     setNuevaPlanilla({
       periodo_id: p.periodo_id,
@@ -181,7 +184,8 @@ export function usePlanillas(empleados = []) {
       subsidio_alimentacion: p.subsidio_alimentacion || 0,
       bono_extra: p.bono_extra || 0,
       quincena25_aplica: p.quincena25_aplica || false,
-      descuentos_adicionales: p.descuentos_adicionales || 0   // <--- NUEVO
+      descuentos_adicionales: p.descuentos_adicionales || 0,
+      pagar_aguinaldo: p.pagar_aguinaldo || false
     });
     setPlanillaCargado(true);
     setPlanillaEditandoId(p.id);
@@ -198,7 +202,8 @@ export function usePlanillas(empleados = []) {
       subsidio_alimentacion: 0,
       bono_extra: 0,
       quincena25_aplica: false,
-      descuentos_adicionales: 0   // <--- NUEVO
+      descuentos_adicionales: 0,
+      pagar_aguinaldo: false
     });
     setPlanillaCargado(false);
     setPlanillaEditandoId(null);

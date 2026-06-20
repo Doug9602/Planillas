@@ -1,5 +1,10 @@
 import React, { useState } from "react";
 
+const meses = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+];
+
 export default function DetallePlanilla({ planilla, empleados, periodos, onVolver }) {
   // ===== HOOKS =====
   const [modalISR, setModalISR] = useState(false);
@@ -47,7 +52,17 @@ export default function DetallePlanilla({ planilla, empleados, periodos, onVolve
     setModalPlanillaUnica(false);
   };
 
-  // ===== ESTILOS DE MODALES =====
+  // ===== FORMATO DE FECHA =====
+  const formatearFecha = (fechaStr) => {
+    if (!fechaStr) return "Fecha no disponible";
+    const fecha = new Date(fechaStr);
+    const dia = fecha.getDate();
+    const mes = meses[fecha.getMonth()];
+    const año = fecha.getFullYear();
+    return `${dia}/${mes}/${año}`;
+  };
+
+  // ===== ESTILOS =====
   const modalOverlayStyle = {
     position: "fixed",
     top: 0,
@@ -222,7 +237,7 @@ export default function DetallePlanilla({ planilla, empleados, periodos, onVolve
               <div><strong>DUI:</strong> {emp ? emp.dui : "?"}</div>
               <div><strong>Área:</strong> {emp ? emp.area : "?"}</div>
               <div><strong>Fecha Ingreso:</strong> {emp ? emp.fecha_ingreso : "?"}</div>
-              <div><strong>Fecha Corte:</strong> {per ? per.fecha_corte : "?"}</div>
+              <div><strong>Fecha Corte:</strong> {formatearFecha(per?.fecha_corte)}</div>
             </div>
           </div>
 
