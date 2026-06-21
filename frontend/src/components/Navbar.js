@@ -20,8 +20,8 @@ export default function Navbar({
         <a href="#" onClick={onPeriodos}>Períodos</a>
         <a href="#" onClick={onPlanillas}>Planillas</a>
         <a href="#" onClick={onPlanillaMensual}>Planilla Mensual</a>  {/* NUEVO */}
-        <a href="#">Prestaciones</a>
-        <a href="#">Ausencias</a>
+        {/* <a href="#">Prestaciones</a> */}
+        {/* <a href="#">Ausencias</a> */}
       </nav>
       <div className="right-section">
         <div className="social-icons">

@@ -13,7 +13,11 @@ app = FastAPI(title="API Planillas Texaco", version="1.0.0")
 # Configurar CORS para permitir peticiones desde React
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    # allow_origins=["http://localhost:3000"],
+    allow_origins=[
+    "http://localhost:3000",
+    "https://accessible-yearly-immune-pads.trycloudflare.com",
+],
     allow_methods=["*"],
     allow_headers=["*"],
 )

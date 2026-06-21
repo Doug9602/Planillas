@@ -1,3 +1,5 @@
+// hooks/usePeriodos.js
+
 import { useState, useEffect } from "react";
 import { API_URL } from "../config/api";
 import { manejarError } from "../utils/errorHandler";
@@ -7,6 +9,8 @@ import { confirmarAccion } from "../utils/alerts";
 export function usePeriodos() {
   const [periodos, setPeriodos] = useState([]);
   const [nuevoPeriodo, setNuevoPeriodo] = useState({
+    mes: "",
+    año: new Date().getFullYear(),  // ✅ Agregado año por defecto
     fecha_corte: "",
     descripcion: ""
   });
@@ -42,7 +46,7 @@ export function usePeriodos() {
 
     // Extraer mes y año de la fecha de corte
     const fecha = new Date(nuevoPeriodo.fecha_corte);
-    const mes = fecha.getMonth() + 1;  // getMonth() devuelve 0-11
+    const mes = fecha.getMonth() + 1;
     const año = fecha.getFullYear();
 
     // Construir objeto a enviar al backend
@@ -79,64 +83,49 @@ export function usePeriodos() {
   };
 
   const actualizarPeriodo = async (e) => {
-  e.preventDefault();
-  if (!nuevoPeriodo.fecha_corte) {
-    toast.error("La fecha de corte es obligatoria");
-    return;
-  }
-  const fecha = new Date(nuevoPeriodo.fecha_corte);
-  const mes = fecha.getMonth() + 1;
-  const año = fecha.getFullYear();
-
-  const datosEnviar = {
-    mes: mes,
-    año: año,
-    fecha_corte: nuevoPeriodo.fecha_corte,
-    total_general: nuevoPeriodo.total_general || 0,
-    descripcion: nuevoPeriodo.descripcion || ""
-  };
-
-   try {
-    const res = await fetch(`${API_URL}/periodo/${periodoEditandoId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(datosEnviar),
-    });
-    if (res.ok) {
-      // ... éxito
-      // 1. Obtenemos la respuesta del servidor
-      const data = await res.json();
-
-      // 2. Buscamos el período modificado en tu lista actual y lo reemplazamos
-      // Nota: Si tu API no devuelve el objeto modificado sino un texto de éxito, 
-      // cambia 'data' por '{ ...per, ...datosEnviar }'
-      const nuevosPeriodos = periodos.map((per) =>
-        per.id === periodoEditandoId ? data : per
-      );
-
-      // 3. Volvemos a ordenar la lista por fecha por si se cambió la fecha de corte
-      nuevosPeriodos.sort((a, b) => new Date(a.fecha_corte) - new Date(b.fecha_corte));
-
-      // 4. Guardamos la nueva lista en el estado para que se refresque la pantalla
-      setPeriodos(nuevosPeriodos);
-      
-      // 5. Limpiamos el formulario y quitamos el modo edición
-      limpiarFormularioPeriodo();
-      toast.success("Período actualizado exitosamente");
-      
-      
-    } else {
-      const error = await res.json();
-      console.error("❌ Error del backend:", error); // <--- MUESTRA EL ERROR COMPLETO
-      alert(`Error: ${JSON.stringify(error, null, 2)}`); // <--- MUESTRA EN ALERT
-      const mensaje = manejarError(error);
-      toast.error(`Error: ${mensaje}`);
+    e.preventDefault();
+    if (!nuevoPeriodo.fecha_corte) {
+      toast.error("La fecha de corte es obligatoria");
+      return;
     }
-  } catch (error) {
-    console.error("Error al actualizar periodo:", error);
-    toast.error("Error de conexión con el backend");
-  }
-};
+    const fecha = new Date(nuevoPeriodo.fecha_corte);
+    const mes = fecha.getMonth() + 1;
+    const año = fecha.getFullYear();
+
+    const datosEnviar = {
+      mes: mes,
+      año: año,
+      fecha_corte: nuevoPeriodo.fecha_corte,
+      total_general: nuevoPeriodo.total_general || 0,
+      descripcion: nuevoPeriodo.descripcion || ""
+    };
+
+    try {
+      const res = await fetch(`${API_URL}/periodo/${periodoEditandoId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datosEnviar),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const nuevosPeriodos = periodos.map((per) =>
+          per.id === periodoEditandoId ? data : per
+        );
+        nuevosPeriodos.sort((a, b) => new Date(a.fecha_corte) - new Date(b.fecha_corte));
+        setPeriodos(nuevosPeriodos);
+        limpiarFormularioPeriodo();
+        toast.success("Período actualizado exitosamente");
+      } else {
+        const error = await res.json();
+        console.error("❌ Error del backend:", error);
+        const mensaje = manejarError(error);
+        toast.error(`Error: ${mensaje}`);
+      }
+    } catch (error) {
+      console.error("Error al actualizar periodo:", error);
+      toast.error("Error de conexión con el backend");
+    }
+  };
 
   const eliminarPeriodo = async (id) => {
     const confirmado = await confirmarAccion(
@@ -164,11 +153,18 @@ export function usePeriodos() {
   const cargarPeriodo = (per) => {
     let fechaCorte = per.fecha_corte;
     if (fechaCorte && fechaCorte.includes('/')) {
-      // Si viene en formato DD/MM/YYYY, convertirlo a YYYY-MM-DD
       const partes = fechaCorte.split('/');
       fechaCorte = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
     }
+    
+    // Extraer mes y año de la fecha_corte
+    const fecha = new Date(per.fecha_corte);
+    const mes = fecha.getMonth() + 1;
+    const año = fecha.getFullYear();
+    
     setNuevoPeriodo({
+      mes: mes,
+      año: año,
       fecha_corte: per.fecha_corte,
       descripcion: per.descripcion || ""
     });
@@ -178,6 +174,8 @@ export function usePeriodos() {
 
   const limpiarFormularioPeriodo = () => {
     setNuevoPeriodo({
+      mes: "",
+      año: new Date().getFullYear(),  // ✅ Año por defecto al limpiar
       fecha_corte: "",
       descripcion: ""
     });
@@ -186,9 +184,10 @@ export function usePeriodos() {
   };
 
   const generarProximoPeriodo = () => {
-
     if (periodos.length === 0) {
       setNuevoPeriodo({
+        mes: 1,
+        año: 2026,
         fecha_corte: "2026-01-31",
         descripcion: ""
       });
@@ -207,8 +206,9 @@ export function usePeriodos() {
     const ultimoDia = new Date(año, mes, 0).getDate();
     const fechaCorte = `${año}-${String(mes).padStart(2, '0')}-${String(ultimoDia).padStart(2, '0')}`;
 
-
     setNuevoPeriodo({
+      mes: mes,
+      año: año,
       fecha_corte: fechaCorte,
       descripcion: ""
     });

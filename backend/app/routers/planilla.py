@@ -27,6 +27,13 @@ def crear_planilla(planilla_in: PlanillaCreate, db: Session = Depends(get_db)):
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
+    # ✅ VALIDACIÓN: La fecha de corte no puede ser anterior a la fecha de ingreso
+    if periodo.fecha_corte < empleado.fecha_ingreso:
+        raise HTTPException(
+            status_code=400,
+            detail=f"No se puede crear planilla para el período {periodo.fecha_corte} porque es anterior a la fecha de ingreso del empleado ({empleado.fecha_ingreso})"
+        )
+
     # Validar duplicado de planilla
     existente = db.query(Planilla).filter(
         Planilla.empleado_id == planilla_in.empleado_id,
@@ -171,6 +178,13 @@ def actualizar_planilla(id: int, planilla_in: PlanillaUpdate, db: Session = Depe
     empleado = db.query(Empleado).filter(Empleado.id == planilla_in.empleado_id).first()
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    # ✅ VALIDACIÓN: La fecha de corte no puede ser anterior a la fecha de ingreso
+    if periodo.fecha_corte < empleado.fecha_ingreso:
+        raise HTTPException(
+            status_code=400,
+            detail=f"No se puede actualizar la planilla para el período {periodo.fecha_corte} porque es anterior a la fecha de ingreso del empleado ({empleado.fecha_ingreso})"
+        )
 
     existente = db.query(Planilla).filter(
         Planilla.empleado_id == planilla_in.empleado_id,
