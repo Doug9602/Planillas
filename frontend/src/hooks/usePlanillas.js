@@ -5,8 +5,6 @@ import { confirmarAccion } from "../utils/alerts";
 import { manejarError } from "../utils/errorHandler";
 
 export function usePlanillas(empleados = []) {
-  const safeEmpleados = Array.isArray(empleados) ? empleados : [];
-
   const [planillas, setPlanillas] = useState([]);
   const [nuevaPlanilla, setNuevaPlanilla] = useState({
     periodo_id: "",
@@ -45,10 +43,10 @@ export function usePlanillas(empleados = []) {
     cargarPlanillas();
   }, []);
 
-  // Auto-llenar sueldo_base al seleccionar empleado
+  // Auto-llenar sueldo_base al seleccionar empleado (CORREGIDO)
   useEffect(() => {
-    if (nuevaPlanilla.empleado_id && safeEmpleados.length > 0) {
-      const empleado = safeEmpleados.find(emp => emp.id === parseInt(nuevaPlanilla.empleado_id));
+    if (nuevaPlanilla.empleado_id && Array.isArray(empleados) && empleados.length > 0) {
+      const empleado = empleados.find(emp => emp.id === parseInt(nuevaPlanilla.empleado_id));
       if (empleado && empleado.salario_mensual) {
         setNuevaPlanilla(prev => ({
           ...prev,
@@ -56,7 +54,7 @@ export function usePlanillas(empleados = []) {
         }));
       }
     }
-  }, [nuevaPlanilla.empleado_id, safeEmpleados]);
+  }, [nuevaPlanilla.empleado_id, empleados]);
 
   // Crear planilla
   const crearPlanilla = async (e) => {

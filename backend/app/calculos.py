@@ -42,24 +42,20 @@ def calcular_monto_vacaciones(sueldo_base, fecha_ingreso: date, fecha_corte: dat
             return (float(sueldo_base) / 2) * 0.30
     return 0.0
 
-# --- AGUINALDO (CORREGIDO) ---
+# --- AGUINALDO ---
 def calcular_aguinaldo(sueldo_base, fecha_ingreso: date, fecha_corte: date) -> float:
     """
     Calcula el monto del aguinaldo basado en la antigüedad al 20 de octubre del año de la fecha de corte.
     Si tiene menos de un año, se paga proporcional a los meses completos.
     """
-    # Fecha de referencia: 20 de octubre del año de fecha_corte
     fecha_ref = date(fecha_corte.year, 10, 20)
     
-    # Si el empleado ingresó después del 20 de octubre, no tiene derecho en este período
     if fecha_ingreso > fecha_ref:
         return 0.0
     
-    # Calcular años completos entre fecha_ingreso y fecha_ref
     años = calcular_anios(fecha_ingreso, fecha_ref)
     
     if años >= 1:
-        # Usar tabla de días según años de servicio
         if años < 3:
             dias = 15
         elif años < 10:
@@ -67,24 +63,57 @@ def calcular_aguinaldo(sueldo_base, fecha_ingreso: date, fecha_corte: date) -> f
         else:
             dias = 21
     else:
-        # Menos de un año: calcular proporcional por meses completos
         meses = (fecha_ref.year - fecha_ingreso.year) * 12 + (fecha_ref.month - fecha_ingreso.month)
-        # Restar un mes si el día de ingreso es mayor que el día de referencia
         if fecha_ingreso.day > fecha_ref.day:
             meses -= 1
         if meses < 0:
             meses = 0
-        # Días proporcionales: 15 días * (meses / 12)
         dias = (15 * meses) / 12
     
-    # Calcular monto
     return (float(sueldo_base) / 30) * dias
 
-# --- QUINCENA 25 ---
-def calcular_quincena25(sueldo_base, aplica: bool) -> float:
-    if aplica and float(sueldo_base) <= 1500:
-        return float(sueldo_base) * 0.5
-    return 0.0
+# --- QUINCENA 25 (CORREGIDA) ---
+def calcular_quincena25(sueldo_base, aplica: bool, fecha_ingreso: date, fecha_corte: date) -> float:
+    """
+    Calcula el monto de la Quincena 25 de forma proporcional.
+    - Solo aplica si el sueldo base es <= $1,500.
+    - Solo aplica si el año de fecha_corte es >= 2026.
+    - El período de cómputo es del 15 de enero del año anterior al 15 de enero del año de fecha_corte.
+    - Si el empleado ingresó antes del 15 de enero del año anterior → 12 meses completos (pago completo).
+    - Si ingresó durante el año, se calculan los meses completos trabajados hasta el 15 de enero del año de corte.
+    - Se usa la regla del día 15: si ingresa después del día 15 de un mes, ese mes no se cuenta.
+    """
+    if not aplica:
+        return 0.0
+    if float(sueldo_base) > 1500:
+        return 0.0
+    if fecha_corte.year < 2026:
+        return 0.0
+
+    fecha_limite = date(fecha_corte.year, 1, 15)  # 15 de enero del año de la fecha de corte
+
+    # Si ingresó después del 15 de enero del año de corte → no tiene derecho
+    if fecha_ingreso > fecha_limite:
+        return 0.0
+
+    # Inicio del período: 15 de enero del año anterior
+    fecha_inicio_periodo = date(fecha_corte.year - 1, 1, 15)
+
+    if fecha_ingreso <= fecha_inicio_periodo:
+        meses_laborados = 12
+    else:
+        # Calcular meses completos entre fecha_ingreso y fecha_limite
+        años_diff = fecha_limite.year - fecha_ingreso.year
+        meses_diff = fecha_limite.month - fecha_ingreso.month
+        # Ajuste por día 15
+        if fecha_ingreso.day > 15:
+            meses_diff -= 1
+        meses_laborados = años_diff * 12 + meses_diff
+        if meses_laborados < 0:
+            meses_laborados = 0
+
+    factor = meses_laborados / 12
+    return (float(sueldo_base) / 2) * factor
 
 # --- DEDUCCIONES ---
 def calcular_isss(monto_cotizable) -> float:

@@ -27,13 +27,6 @@ def crear_planilla(planilla_in: PlanillaCreate, db: Session = Depends(get_db)):
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
-    # ✅ VALIDACIÓN: La fecha de corte no puede ser anterior a la fecha de ingreso
-    if periodo.fecha_corte < empleado.fecha_ingreso:
-        raise HTTPException(
-            status_code=400,
-            detail=f"No se puede crear planilla para el período {periodo.fecha_corte} porque es anterior a la fecha de ingreso del empleado ({empleado.fecha_ingreso})"
-        )
-
     # Validar duplicado de planilla
     existente = db.query(Planilla).filter(
         Planilla.empleado_id == planilla_in.empleado_id,
@@ -70,7 +63,17 @@ def crear_planilla(planilla_in: PlanillaCreate, db: Session = Depends(get_db)):
     monto_extra_nocturnas = calculos.calcular_horas_extras_nocturnas(planilla_in.horas_extras_nocturnas, valor_hora)
 
     monto_vacaciones = calculos.calcular_monto_vacaciones(sueldo_base, empleado.fecha_ingreso, periodo.fecha_corte)
-    monto_quincena25 = calculos.calcular_quincena25(sueldo_base, planilla_in.quincena25_aplica)
+    
+    # ========== 🔽 CAMBIO AQUÍ ==========
+    # Quincena 25 (con proporcionalidad y parámetros adicionales)
+    monto_quincena25 = calculos.calcular_quincena25(
+        sueldo_base,
+        planilla_in.quincena25_aplica,
+        empleado.fecha_ingreso,
+        periodo.fecha_corte
+    )
+    # ========== 🔼 FIN DEL CAMBIO ==========
+
     descuentos_adicionales = planilla_in.descuentos_adicionales or 0
 
     total_ingresos = (sueldo_base +
@@ -97,7 +100,6 @@ def crear_planilla(planilla_in: PlanillaCreate, db: Session = Depends(get_db)):
     total_deducciones = isss_emp + afp_emp + isr + descuentos_adicionales
     monto_neto = total_ingresos - total_deducciones
 
-    # ✅ CORREGIDO: calcular directamente con las constantes
     isss_patronal = monto_cotizable * calculos.ISSS_PATRONAL_PCT
     afp_patronal = monto_cotizable * calculos.AFP_PATRONAL_PCT
     monto_planilla_unica = isss_emp + afp_emp + isss_patronal + afp_patronal
@@ -179,13 +181,6 @@ def actualizar_planilla(id: int, planilla_in: PlanillaUpdate, db: Session = Depe
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
-    # ✅ VALIDACIÓN: La fecha de corte no puede ser anterior a la fecha de ingreso
-    if periodo.fecha_corte < empleado.fecha_ingreso:
-        raise HTTPException(
-            status_code=400,
-            detail=f"No se puede actualizar la planilla para el período {periodo.fecha_corte} porque es anterior a la fecha de ingreso del empleado ({empleado.fecha_ingreso})"
-        )
-
     existente = db.query(Planilla).filter(
         Planilla.empleado_id == planilla_in.empleado_id,
         Planilla.periodo_id == planilla_in.periodo_id,
@@ -222,7 +217,17 @@ def actualizar_planilla(id: int, planilla_in: PlanillaUpdate, db: Session = Depe
     monto_extra_nocturnas = calculos.calcular_horas_extras_nocturnas(planilla_in.horas_extras_nocturnas, valor_hora)
 
     monto_vacaciones = calculos.calcular_monto_vacaciones(sueldo_base, empleado.fecha_ingreso, periodo.fecha_corte)
-    monto_quincena25 = calculos.calcular_quincena25(sueldo_base, planilla_in.quincena25_aplica)
+    
+    # ========== 🔽 CAMBIO AQUÍ ==========
+    # Quincena 25 (con proporcionalidad y parámetros adicionales)
+    monto_quincena25 = calculos.calcular_quincena25(
+        sueldo_base,
+        planilla_in.quincena25_aplica,
+        empleado.fecha_ingreso,
+        periodo.fecha_corte
+    )
+    # ========== 🔼 FIN DEL CAMBIO ==========
+
     descuentos_adicionales = planilla_in.descuentos_adicionales or 0
 
     total_ingresos = (sueldo_base +
@@ -249,7 +254,6 @@ def actualizar_planilla(id: int, planilla_in: PlanillaUpdate, db: Session = Depe
     total_deducciones = isss_emp + afp_emp + isr + descuentos_adicionales
     monto_neto = total_ingresos - total_deducciones
 
-    # ✅ CORREGIDO: calcular directamente con las constantes
     isss_patronal = monto_cotizable * calculos.ISSS_PATRONAL_PCT
     afp_patronal = monto_cotizable * calculos.AFP_PATRONAL_PCT
     monto_planilla_unica = isss_emp + afp_emp + isss_patronal + afp_patronal
@@ -354,7 +358,6 @@ def listar_planillas(db: Session = Depends(get_db)):
         total_deducciones = isss_emp + afp_emp + isr
         monto_neto = float(pl.total_ingresos) - total_deducciones
 
-        # ✅ CORREGIDO: calcular directamente con las constantes
         isss_patronal = monto_cotizable * calculos.ISSS_PATRONAL_PCT
         afp_patronal = monto_cotizable * calculos.AFP_PATRONAL_PCT
         monto_planilla_unica = isss_emp + afp_emp + isss_patronal + afp_patronal
@@ -421,7 +424,6 @@ def obtener_planilla(id: int, db: Session = Depends(get_db)):
     total_deducciones = isss_emp + afp_emp + isr
     monto_neto = float(pl.total_ingresos) - total_deducciones
 
-    # ✅ CORREGIDO: calcular directamente con las constantes
     isss_patronal = monto_cotizable * calculos.ISSS_PATRONAL_PCT
     afp_patronal = monto_cotizable * calculos.AFP_PATRONAL_PCT
     monto_planilla_unica = isss_emp + afp_emp + isss_patronal + afp_patronal

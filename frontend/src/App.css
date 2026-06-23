@@ -258,3 +258,100 @@ tr:nth-child(even) {
 tr:hover {
   background-color: #f1f1f1;
 }
+
+/* ===== ESTILOS PARA IMPRESIÓN ===== */
+@media print {
+  /* Ocultar elementos no deseados */
+  .navbar,
+  .footer,
+  .cta,
+  .hero,
+  .gestion,
+  .social-icons,
+  .logo-container,
+  button:not(.print-only),
+  .btn,
+  button,
+  a {
+    display: none !important;
+  }
+
+  /* Mostrar el encabezado de impresión */
+  .print-header {
+    display: block !important;
+  }
+
+  /* Estilos de tabla para impresión (colores en negro) */
+  .print-table {
+    font-size: 11px !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  .print-table th,
+  .print-table td {
+    border: 1px solid #000 !important;
+    padding: 4px 6px !important;
+    text-align: center !important;
+    color: #000 !important;
+    background: #fff !important;
+  }
+
+  .print-table th {
+    background: #eaeaea !important;
+    font-weight: bold !important;
+    color: #000 !important;
+  }
+
+  .print-table tr {
+    background: #fff !important;
+  }
+
+  .print-table tr:nth-child(even) {
+    background: #f9f9f9 !important;
+  }
+
+  /* Fila de totales */
+  .print-table tr:last-child {
+    border-top: 2px solid #000 !important;
+    background: #f0f0f0 !important;
+  }
+
+  .print-table tr:last-child td {
+    font-weight: bold !important;
+    color: #000 !important;
+  }
+
+  /* Ajustes de página */
+  body {
+    margin: 0.5in !important;
+    background: #fff !important;
+  }
+
+  .app {
+    max-width: 100% !important;
+    margin: 0 !important;
+    background: #fff !important;
+  }
+
+  .container,
+  .content {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #fff !important;
+  }
+
+  /* Ocultar botones de acción en la tabla */
+  .print-table td button {
+    display: none !important;
+  }
+
+  /* Ajustar tamaño de letra para que quepa */
+  .print-table {
+    font-size: 10px !important;
+  }
+
+  .print-table-container {
+    overflow: visible !important;
+  }
+}

@@ -16,7 +16,7 @@ app.add_middleware(
     # allow_origins=["http://localhost:3000"],
     allow_origins=[
     "http://localhost:3000",
-    "https://accessible-yearly-immune-pads.trycloudflare.com",
+    "https://dan-weeks-buttons-interview.trycloudflare.com",
 ],
     allow_methods=["*"],
     allow_headers=["*"],
