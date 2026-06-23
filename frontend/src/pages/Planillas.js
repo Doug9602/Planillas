@@ -1,6 +1,7 @@
 import React, { useState } from "react"; // 👈 Agregamos useState aquí arriba
 import DetallePlanilla from "./DetallePlanilla";
 
+
 const meses = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
@@ -61,9 +62,9 @@ export default function Planillas({
 
   return (
     <>
-      <section className="hero" style={{ height: "200px" }}>
+      <section className="hero" style={{ height: "250px" }}>
         <div className="overlay">
-          <h1 style={{ fontSize: "32px" }}>Registro de Planillas</h1>
+          <h1 style={{ fontSize: "36px" }}>Registro de Planillas</h1>
         </div>
       </section>
 

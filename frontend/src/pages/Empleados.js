@@ -1,6 +1,7 @@
 import React from "react";
 import { calcularAntiguedad } from "../utils/helpers";
 
+
 export default function Empleados({
   empleados,
   nuevoEmpleado,
